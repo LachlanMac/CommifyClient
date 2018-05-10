@@ -30,6 +30,7 @@ public class DigitalChannel extends IOChannel {
 	private boolean value;
 	private TYPE type;
 	private int height, width, moduleHeight, moduleWidth;
+	private Dimension moduleDim, ioSelectorDim, ledDim;
 	JButton module, ioSelector;
 	JLabel led;
 	JLabel channel, moduleType, fuse;
@@ -44,20 +45,24 @@ public class DigitalChannel extends IOChannel {
 
 		this.height = (int) (board.getCenterPanel().getPreferredSize().getHeight() / 1.5) - 1;
 		this.width = (int) board.getCenterPanel().getPreferredSize().getWidth() / 24 - 5;
+		this.setPreferredSize(new Dimension(width, height));
+		this.moduleHeight = (int) (this.getPreferredSize().getHeight());
+		this.moduleWidth = (int) (this.getPreferredSize().getWidth());
+		this.setBackground(ResourceLoader.digitalGreen);
+		this.setOpaque(true);
 
 		this.setLayout(new BorderLayout());
-		this.setPreferredSize(new Dimension(width, height));
 
-		this.moduleHeight = (int) (this.getPreferredSize().getHeight());
-		this.moduleWidth = (int) this.getPreferredSize().getWidth();
-
-		loadImages();
+		moduleDim = new Dimension((int) (moduleWidth - 1), (int) (moduleHeight * .60f));
+		ioSelectorDim = new Dimension((int) (moduleWidth - 5), (int) ((moduleWidth - 5) * 1.5));
+		ledDim = new Dimension((int) (moduleWidth - 5), (int) (moduleWidth - 5));
 
 		led = new JLabel(onLED);
+
 		module = new JButton();
-		module.setPreferredSize(new Dimension(moduleWidth, moduleHeight));
+		module.setPreferredSize(moduleDim);
 		module.setBackground(ResourceLoader.digitalGreen);
-		module.setOpaque(true);
+		module.setOpaque(false);
 		module.setBorderPainted(true);
 		module.setMargin(new Insets(0, 0, 0, 0));
 		module.setBorder(null);
@@ -74,7 +79,7 @@ public class DigitalChannel extends IOChannel {
 		ioSelector.setBorderPainted(true);
 		ioSelector.setMargin(new Insets(0, 0, 0, 0));
 		ioSelector.setBorder(null);
-		ioSelector.setPreferredSize(new Dimension(moduleWidth, moduleHeight));
+		ioSelector.setPreferredSize(ioSelectorDim);
 		ioSelector.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -83,6 +88,7 @@ public class DigitalChannel extends IOChannel {
 			}
 
 		});
+		loadImages();
 		drawUI();
 	}
 
@@ -158,10 +164,13 @@ public class DigitalChannel extends IOChannel {
 
 	public void drawUI() {
 		moduleType = new JLabel(inputModule);
+		moduleType.setBackground(ResourceLoader.digitalGreen);
+		moduleType.setOpaque(true);
 		fuse = new JLabel(ioIn);
 
-		fuse.setPreferredSize(ioSelector.getPreferredSize());
-		moduleType.setPreferredSize(module.getPreferredSize());
+		fuse.setPreferredSize(ioSelectorDim);
+		moduleType.setPreferredSize(moduleDim);
+
 		if (this.type == TYPE.input) {
 			module.setBackground(Color.yellow);
 			moduleType.setIcon(inputModule);
@@ -184,10 +193,6 @@ public class DigitalChannel extends IOChannel {
 		}
 		channel = new JLabel("C:" + Integer.toString(channelID));
 
-		module.setPreferredSize(new Dimension(width - 1, (int) (height * .80f)));
-
-		ioSelector.setPreferredSize(new Dimension(width - 1, (int) (height * .18f)));
-
 		this.add(module, BorderLayout.CENTER);
 		this.add(ioSelector, BorderLayout.PAGE_END);
 		this.add(led, BorderLayout.PAGE_START);
@@ -207,22 +212,20 @@ public class DigitalChannel extends IOChannel {
 
 	public void loadImages() {
 
-		ioIn = new ImageIcon(ResourceLoader.ioSelectorIn.getScaledInstance((int) this.getPreferredSize().getWidth(),
-				(int) this.getPreferredSize().getWidth(), Image.SCALE_SMOOTH));
-		ioOut = new ImageIcon(ResourceLoader.ioSelectorOut.getScaledInstance((int) this.getPreferredSize().getWidth(),
-				(int) this.getPreferredSize().getWidth(), Image.SCALE_SMOOTH));
+		ioIn = new ImageIcon(ResourceLoader.ioSelectorIn.getScaledInstance((int) ioSelectorDim.getWidth(),
+				(int) ioSelectorDim.getHeight(), Image.SCALE_SMOOTH));
+		ioOut = new ImageIcon(ResourceLoader.ioSelectorOut.getScaledInstance((int) ioSelectorDim.getWidth(),
+				(int) ioSelectorDim.getHeight(), Image.SCALE_SMOOTH));
 
-		offLED = new ImageIcon(ResourceLoader.digital_offLED.getScaledInstance((int) this.getPreferredSize().getWidth(),
-				(int) this.getPreferredSize().getWidth(), Image.SCALE_SMOOTH));
-		onLED = new ImageIcon(ResourceLoader.digital_onLED.getScaledInstance((int) this.getPreferredSize().getWidth(),
-				(int) this.getPreferredSize().getWidth(), Image.SCALE_SMOOTH));
+		offLED = new ImageIcon(ResourceLoader.digital_offLED.getScaledInstance((int) ledDim.getWidth(),
+				(int) ledDim.getWidth(), Image.SCALE_SMOOTH));
+		onLED = new ImageIcon(ResourceLoader.digital_onLED.getScaledInstance((int) ledDim.getWidth(),
+				(int) ledDim.getWidth(), Image.SCALE_SMOOTH));
 
-		outputModule = new ImageIcon(
-				ResourceLoader.outputModule.getScaledInstance((int) this.getPreferredSize().getWidth(),
-						(int) this.getPreferredSize().getHeight(), Image.SCALE_SMOOTH));
-		inputModule = new ImageIcon(
-				ResourceLoader.inputModule.getScaledInstance((int) this.getPreferredSize().getWidth(),
-						(int) this.getPreferredSize().getHeight(), Image.SCALE_SMOOTH));
+		outputModule = new ImageIcon(ResourceLoader.outputModule.getScaledInstance((int) moduleDim.getWidth(),
+				(int) moduleDim.getHeight(), Image.SCALE_SMOOTH));
+		inputModule = new ImageIcon(ResourceLoader.inputModule.getScaledInstance((int) moduleDim.getWidth(),
+				(int) moduleDim.getHeight(), Image.SCALE_SMOOTH));
 
 	}
 

@@ -14,13 +14,15 @@ public class Launcher {
 			serverPort = args[1];
 		}
 
+		SettingsLoader.loadSettings();
+
 		ResourceLoader.loadResources();
 
-		NetController client = new NetController();
+	
+		
+		NetController net = new NetController();
 
-		CommifyUI commify = new CommifyUI(client);
-
-		client.start();
+		CommifyUI commify = new CommifyUI(net);
 
 	}
 

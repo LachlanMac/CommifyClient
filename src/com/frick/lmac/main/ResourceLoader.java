@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
 public class ResourceLoader {
 
 	public static Image analogBoard, digitalBoard, inputModule, outputModule, analog_offLED, analog_onLED,
-			digital_offLED, digital_onLED, ioSelectorIn, ioSelectorOut;
+			digital_offLED, digital_onLED, ioSelectorIn, ioSelectorOut, active_offLED, active_onLED;
 	public static Image chan1_2, chan3_4, chan5_6, chan7_8, chan9_10, chan11_12, chan13_14, chan15_16, chan17_18,
 			chan19_20, chan21_22, chan23_24, oChan5_8, oChan1_4;
 
@@ -22,18 +22,20 @@ public class ResourceLoader {
 		try {
 
 			analogRed = new Color(126, 16, 16);
-			digitalGreen = new Color(0, 64, 0);
+			digitalGreen = new Color(0, 75, 47);
 
-			ioSelectorIn = ImageIO.read(new File(Launcher.resPath + "/ioSelectorIn.png"));
-			ioSelectorOut = ImageIO.read(new File(Launcher.resPath + "/ioSelectorOut.png"));
+			ioSelectorIn = ImageIO.read(new File(Launcher.resPath + "/ioSelector_in_HD.png"));
+			ioSelectorOut = ImageIO.read(new File(Launcher.resPath + "/ioSelector_out_HD.png"));
 			digital_offLED = ImageIO.read(new File(Launcher.resPath + "/LED_OFF_DIGITAL.png"));
 			digital_onLED = ImageIO.read(new File(Launcher.resPath + "/LED_ON_DIGITAL.png"));
 			analog_offLED = ImageIO.read(new File(Launcher.resPath + "/LED_OFF_ANALOG.png"));
 			analog_onLED = ImageIO.read(new File(Launcher.resPath + "/LED_ON_ANALOG.png"));
+			active_offLED = ImageIO.read(new File(Launcher.resPath + "/LED_OFF_ACTIVE.png"));
+			active_onLED = ImageIO.read(new File(Launcher.resPath + "/LED_ON_ACTIVE.png"));
 	
 			outputModule = ImageIO.read(new File(Launcher.resPath + "/outputModule.png"));
 			inputModule = ImageIO.read(new File(Launcher.resPath + "/inputModule.png"));
-			digitalBoard = ImageIO.read(new File(Launcher.resPath + "/digitboard2.png"));
+			digitalBoard = ImageIO.read(new File(Launcher.resPath + "/digitalboard_HD.png"));
 			analogBoard = ImageIO.read(new File(Launcher.resPath + "/analogBoard.png"));
 
 			chan1_2 = ImageIO.read(new File(Launcher.resPath + "/chan1-2.png"));

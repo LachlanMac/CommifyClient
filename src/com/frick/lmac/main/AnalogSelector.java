@@ -122,8 +122,8 @@ public class AnalogSelector extends JButton {
 		min = new JLabel();
 		max = new JLabel();
 
-		min.setText(Integer.toString(channelSlider.getMinimum()));
-		max.setText(Integer.toString(channelSlider.getMaximum()));
+		min.setText("0 %");
+		max.setText("100 %");
 
 		sliderPanel.add(min);
 		sliderPanel.add(channelSlider);

@@ -8,6 +8,8 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -17,10 +19,11 @@ public class NetController extends Thread {
 	int serverPort, startAttempts = 0;
 	DatagramSocket socket;
 	private BlockingQueue<CommPacket> sendQueue;
-	private ArrayList<IOBoard> boardList;
+	private Vector<IOBoard> boardList;
+	private boolean connected = false;
 
 	public NetController() {
-		boardList = new ArrayList<IOBoard>();
+		boardList = new Vector<IOBoard>();
 		sendQueue = new ArrayBlockingQueue<CommPacket>(1024);
 		startSocket();
 
@@ -45,21 +48,23 @@ public class NetController extends Thread {
 
 		while (true) {
 
-			for (IOBoard b : boardList) {
+			if (boardList.isEmpty()) {
 
-				responseData = new byte[256];
-				// skip if this board has not been activated yet
-				if (!b.isActivated()) {
-					return;
+				try {
+					Thread.sleep(250);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
 				}
 
-				requestData = getStatePacket(b);
+				responseData = new byte[256];
+
+				requestData = getHeartbeatPacket();
 
 				requestPacket = new DatagramPacket(requestData, requestData.length, serverAddress, serverPort);
 				try {
 
 					socket.send(requestPacket);
-					b.setTXOn();
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -68,16 +73,67 @@ public class NetController extends Thread {
 				try {
 
 					socket.receive(responsePacket);
-					b.setRXOn();
+					connected = true;
+
 					String updateString = new String(responsePacket.getData()).trim();
-					b.updateState(updateString);
+
+					if (updateString.equals("h00=heartbeat")) {
+						connected = true;
+					} else {
+						connected = false;
+					}
+
 				} catch (SocketTimeoutException e) {
+					connected = false;
 					System.out.print("Time out");
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+
+			}
+			for (int i = 0; i < boardList.size(); i++) {
+
+				responseData = new byte[256];
+				// skip if this board has not been activated yet
+				if (!boardList.get(i).isActivated()) {
+					return;
+				}
+
+				requestData = getStatePacket(boardList.get(i));
+
+				requestPacket = new DatagramPacket(requestData, requestData.length, serverAddress, serverPort);
+				try {
+
+					socket.send(requestPacket);
+					boardList.get(i).setTXOn();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				DatagramPacket responsePacket = new DatagramPacket(responseData, responseData.length);
+
+				try {
+
+					socket.receive(responsePacket);
+					connected = true;
+						
+					
+					String updateString = new String(responsePacket.getData()).trim();
+					
+					if(isSuccessPacket(updateString)){
+						boardList.get(i).setRXOn();
+					}
+					boardList.get(i).updateState(updateString);
+				} catch (SocketTimeoutException e) {
+					connected = false;
+					System.out.print("Time out");
+
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
 			}
 
 			try {
@@ -110,11 +166,13 @@ public class NetController extends Thread {
 
 					socket.receive(responsePacket);
 
+					connected = true;
+
 					p.getBoard().decodePacket(responsePacket.getData());
 
 					p.getBoard().setRXOn();
 				} catch (SocketTimeoutException e) {
-
+					connected = false;
 					System.out.println("TIMEOUT");
 
 				} catch (IOException e) {
@@ -151,7 +209,7 @@ public class NetController extends Thread {
 	}
 
 	public void sendState(String state, IOBoard b) {
-	
+
 		sendQueue.add(new CommPacket(state, b));
 
 	}
@@ -160,7 +218,10 @@ public class NetController extends Thread {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(CommPacket.getPacketCount() + "=d" + b.getBoardID() + b.getBoardType() + "=RemoveRequest");
+
 		sendQueue.add(new CommPacket(new String(sb), b));
+
+		boardList.remove(b);
 
 	}
 
@@ -184,7 +245,8 @@ public class NetController extends Thread {
 	}
 
 	public void removeBoard(IOBoard b) {
-		boardList.remove(b);
+		System.out.println("Board Removed");
+		// boardList.remove(b);
 	}
 
 	public void sendStartPacket() {
@@ -202,7 +264,9 @@ public class NetController extends Thread {
 
 		try {
 			socket.receive(receive);
+			connected = true;
 		} catch (SocketTimeoutException e1) {
+			connected = false;
 			System.out.println("Time out sending start packet");
 			sendStartPacket();
 
@@ -210,6 +274,32 @@ public class NetController extends Thread {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
+	}
+
+	public byte[] getHeartbeatPacket() {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(CommPacket.getPacketCount() + "=h00" + "=xxHeartBeatxx");
+		return new String(sb).getBytes();
+	}
+
+	public boolean getConnectionStatus() {
+		return connected;
+	}
+
+	public static boolean isSuccessPacket(String data) {
+
+		char ok = data.charAt(1);
+		if (ok == 'Z') {
+			System.out.println("SUCCESS!" + ok + "   "  + data);
+			return true;
+		} else if (ok == 'X') {
+			System.out.println("FAILURE!" + ok + "   "  + data);
+			return false;
+		}
+		System.out.println("DEFAULT: FALSE");
+		return false;
+
 	}
 
 }

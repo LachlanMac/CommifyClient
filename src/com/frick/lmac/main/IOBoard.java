@@ -16,10 +16,12 @@ public abstract class IOBoard extends JLabel {
 
 	protected NetController net;
 	protected CommifyUI ui;
+	protected Menu menu;
 
-	public IOBoard(CommifyUI ui, NetController net, int boardID) {
+	public IOBoard(CommifyUI ui, NetController net, Menu menu, int boardID) {
 		this.ui = ui;
 		this.boardID = boardID;
+		this.menu = menu;
 		this.net = net;
 		System.out.println("Board created with ID " + boardID);
 	}
@@ -57,6 +59,8 @@ public abstract class IOBoard extends JLabel {
 	public abstract void setTXOn();
 
 	public abstract JButton getUIButton();
+
+	public abstract BoardButton getBoardMenuButton(JPanel parent);
 
 	public void activateBoard() {
 		this.isNewBoard = false;

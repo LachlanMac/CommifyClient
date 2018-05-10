@@ -28,8 +28,17 @@ public class CommPacket {
 		return packet_count;
 	}
 
+	public static void sendRX() {
+		
+		
+		
+	}
+	
+	
 	public IOBoard getBoard() {
 		return b;
 	}
+	
+	
 
 }

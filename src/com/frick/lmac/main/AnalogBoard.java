@@ -45,8 +45,8 @@ public class AnalogBoard extends IOBoard {
 
 	Dimension input1ChannelDimension, input2ChannelDimension, outputChannelDimension;
 
-	public AnalogBoard(CommifyUI ui, NetController net, int boardID) {
-		super(ui, net, boardID);
+	public AnalogBoard(CommifyUI ui, NetController net, Menu menu, int boardID) {
+		super(ui, net, menu, boardID);
 		this.boardType = BOARD_TYPE;
 		selectors = new ArrayList<AnalogSelector>();
 
@@ -135,8 +135,9 @@ public class AnalogBoard extends IOBoard {
 				(int) (rxtx.getPreferredSize().getWidth() / 8)));
 
 		rxtx.setOpaque(true);
-		onLED = new ImageIcon(ResourceLoader.analog_onLED.getScaledInstance((int) (rxtx.getPreferredSize().getWidth() / 7 + 5),
-				(int) (rxtx.getPreferredSize().getWidth() / 7 + 5), Image.SCALE_SMOOTH));
+		onLED = new ImageIcon(
+				ResourceLoader.analog_onLED.getScaledInstance((int) (rxtx.getPreferredSize().getWidth() / 7 + 5),
+						(int) (rxtx.getPreferredSize().getWidth() / 7 + 5), Image.SCALE_SMOOTH));
 		offLED = new ImageIcon(
 				ResourceLoader.analog_offLED.getScaledInstance((int) (rxtx.getPreferredSize().getWidth() / 7 + 5),
 						(int) (rxtx.getPreferredSize().getWidth() / 7 + 5), Image.SCALE_SMOOTH));
@@ -290,7 +291,6 @@ public class AnalogBoard extends IOBoard {
 		state = new String(sb);
 		net.sendState(state, this);
 
-
 	}
 
 	public JPanel getCenterPanel() {
@@ -339,8 +339,7 @@ public class AnalogBoard extends IOBoard {
 		} else if (cmd == 'd' && mType == 'Z') {
 			// REMOVE BOARD
 			System.out.println("Board deleted");
-			ui.removeBoard(this);
-			net.removeBoard(this);
+			
 
 		} else if (cmd == 'd' && mType == 'X') {
 			// ERROR REMOVING BOARD
@@ -390,8 +389,7 @@ public class AnalogBoard extends IOBoard {
 
 	@Override
 	public JButton getUIButton() {
-		// TODO Auto-generated method stub
-		return null;
+		return uiButton;
 	}
 
 	public void startTransmit() {
@@ -499,6 +497,12 @@ public class AnalogBoard extends IOBoard {
 
 	public AnalogChannel getChannelByID(int id) {
 		return channels[id - 1];
+	}
+
+	@Override
+	public BoardButton getBoardMenuButton(JPanel parent) {
+		BoardButton b = new BoardButton(parent, this, ui, menu);
+		return b;
 	}
 
 }

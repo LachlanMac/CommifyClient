@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -19,15 +20,18 @@ public class CommifyUI extends JFrame {
 
 	JPanel controllerPanel, analogPanel_1, analogPanel_2, digitalPanel_1, digitalPanel_2, statusPanel, boardPanel,
 			boardSelectorPanel, backDrop;
-
+	ArrayList<IOBoard> boardList;
 	JComboBox aBoardCount, dBoardCount;
 	JButton submitBoardCount;
 	NetController net;
 
 	JButton menuButton;
+	Menu menu;
 
 	public CommifyUI(NetController net) {
 		this.net = net;
+		this.menu = new Menu(net, this);
+		boardList = new ArrayList<IOBoard>();
 		setGUI();
 
 	}
@@ -66,40 +70,48 @@ public class CommifyUI extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				changeBoard(null);
+
 			}
 
 		});
-		
+
 		controllerPanel.add(menuButton);
+		boardPanel.add(menu);
+
+		// addTestBoards();
+
+	}
+
+	public void addTestBoards() {
+
+	}
+
+	public void removeBoardRequest(IOBoard b) {
+		System.out.println("Making request to remove board");
+		b.notifyBoardDeleteRequest();
+		System.out.println("Removing Board");
+		boardList.remove(b);
 		
-		
-		DigitalBoard d1 = new DigitalBoard(this, net, 0);
-		AnalogBoard a1 = new AnalogBoard(this, net, 0);
-		DigitalBoard d2 = new DigitalBoard(this, net, 1);
-		AnalogBoard a2 = new AnalogBoard(this, net, 1);
-		addBoard(d1);
-		addBoard(a1);
-		addBoard(d2);
-		addBoard(a2);
-		System.out.println("Notifying to add board");
-		
-		d1.notifyBoardAddRequest();
-		d2.notifyBoardAddRequest();
-		a1.notifyBoardAddRequest();
-		a2.notifyBoardAddRequest();
+		if(b.getUIButton() == null) {
+			System.out.println("WTF WHY IS GUIBUTTON NUL?");
+		}
+		controllerPanel.remove(b.getUIButton());
+		changeBoard(null);
+
+		controllerPanel.validate();
+		controllerPanel.repaint();
 		
 	}
 
 	
-	public void removeBoard(IOBoard b) {
-		
-		controllerPanel.remove(b.getUIButton());
-		changeBoard(null);
-		
-	}
-	public void addBoard(IOBoard b) {
 
+	public void addBoard(IOBoard b) {
+		boardList.add(b);
 		controllerPanel.add(b.getBoardButton());
+		b.notifyBoardAddRequest();
+
+		controllerPanel.validate();
+		controllerPanel.repaint();
 
 	}
 
@@ -107,8 +119,8 @@ public class CommifyUI extends JFrame {
 		if (b == null) {
 
 			boardPanel.removeAll();
-			boardPanel.add(new JPanel());
-			//add menu
+			boardPanel.add(menu);
+			// add menu
 		} else {
 			System.out.println("Changing board");
 			boardPanel.removeAll();
@@ -118,4 +130,33 @@ public class CommifyUI extends JFrame {
 		repaint();
 
 	};
+
+	public ArrayList<IOBoard> getBoards() {
+		return boardList;
+	}
+
+	public ArrayList<IOBoard> getAnalogBoards() {
+
+		ArrayList<IOBoard> aBoards = new ArrayList<IOBoard>();
+
+		for (IOBoard b : boardList) {
+			if (b.getBoardType() == 2) {
+				aBoards.add(b);
+			}
+		}
+		return aBoards;
+	}
+
+	public ArrayList<IOBoard> getDigitalBoards() {
+
+		ArrayList<IOBoard> dBoards = new ArrayList<IOBoard>();
+
+		for (IOBoard b : boardList) {
+			if (b.getBoardType() == 1) {
+				System.out.println("RETURNING BAORD " + b.getBoardID());
+				dBoards.add(b);
+			}
+		}
+		return dBoards;
+	}
 }

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,17 +28,17 @@ public class DigitalBoard extends IOBoard {
 	private static final long serialVersionUID = 1L;
 	private static final float widthMultiple = 2.4f;
 	DigitalChannel[] channels;
-	ImageIcon boardImg, onLED, offLED, module;
+	ImageIcon boardImg, onLED, offLED, module, onActiveLED, offActiveLED;
 	int width, height, id;
-	JPanel top, center, bottom, rxtx;
-	JLabel rx, tx;
+	JPanel top, center, bottom, rxtx, activePanel;
+	JLabel rx, tx, activeOn, activeOff;
 
-	public DigitalBoard(CommifyUI ui, NetController net, int id) {
-		super(ui, net, id);
+	public DigitalBoard(CommifyUI ui, NetController net, Menu menu, int id) {
+		super(ui, net, menu, id);
 		boardType = BOARD_TYPE;
 
 		buildUI();
-		
+
 		buildChannels();
 
 		net.addBoard(this);
@@ -51,7 +52,7 @@ public class DigitalBoard extends IOBoard {
 		top = new JPanel();
 		bottom = new JPanel();
 
-		height = 400;
+		height = 600;
 		width = (int) (height * widthMultiple);
 		this.setLayout(new BorderLayout());
 
@@ -62,17 +63,18 @@ public class DigitalBoard extends IOBoard {
 				ResourceLoader.digitalBoard.getScaledInstance((int) this.getPreferredSize().getWidth(),
 						(int) this.getPreferredSize().getHeight(), Image.SCALE_SMOOTH));
 		top.setPreferredSize(new Dimension((int) this.getPreferredSize().getWidth(),
-				(int) (this.getPreferredSize().getHeight() * .30f)));
-		bottom.setPreferredSize(new Dimension((int) this.getPreferredSize().getWidth(),
-				(int) (this.getPreferredSize().getHeight() * .15)));
+				(int) (this.getPreferredSize().getHeight() * .28f)));
 		center.setPreferredSize(new Dimension(
 				(int) this.getPreferredSize().getWidth() - ((int) (this.getPreferredSize().getWidth() * .12f)),
-				(int) (this.getPreferredSize().getHeight() * .65f)));
+				(int) (this.getPreferredSize().getHeight() * .74f)));
+		bottom.setPreferredSize(new Dimension((int) this.getPreferredSize().getWidth(),
+				(int) (this.getPreferredSize().getHeight() * .05f)));
+
 		bottom.setOpaque(false);
 
 		center.setLayout(new FlowLayout());
 		rxtx = new JPanel();
-		rxtx.setBackground(new Color(0, 64, 0));
+		rxtx.setBackground(ResourceLoader.digitalGreen);
 
 		rxtx.setLayout(new FlowLayout());
 		rxtx.setPreferredSize(new Dimension((int) (top.getPreferredSize().getWidth() * .14f),
@@ -93,8 +95,10 @@ public class DigitalBoard extends IOBoard {
 				(int) (rxtx.getPreferredSize().getWidth() / 8)));
 
 		rxtx.setOpaque(true);
-		onLED = new ImageIcon(ResourceLoader.digital_onLED.getScaledInstance((int) (rxtx.getPreferredSize().getWidth() / 7 + 5),
-				(int) (rxtx.getPreferredSize().getWidth() / 7 + 5), Image.SCALE_SMOOTH));
+
+		onLED = new ImageIcon(
+				ResourceLoader.digital_onLED.getScaledInstance((int) (rxtx.getPreferredSize().getWidth() / 7 + 5),
+						(int) (rxtx.getPreferredSize().getWidth() / 7 + 5), Image.SCALE_SMOOTH));
 		offLED = new ImageIcon(
 				ResourceLoader.digital_offLED.getScaledInstance((int) (rxtx.getPreferredSize().getWidth() / 7 + 5),
 						(int) (rxtx.getPreferredSize().getWidth() / 7 + 5), Image.SCALE_SMOOTH));
@@ -107,9 +111,28 @@ public class DigitalBoard extends IOBoard {
 		rxtx.add(tx);
 		rxtx.add(rxLabel);
 		rxtx.add(rx);
-		
+
+		activePanel = new JPanel();
+		activePanel.setBackground(ResourceLoader.digitalGreen);
+		activePanel.setPreferredSize(new Dimension((int) (top.getPreferredSize().getWidth() * .035f),
+				(int) (top.getPreferredSize().getWidth() * .035f)));
+		activePanel.setOpaque(false);
+
+		onActiveLED = new ImageIcon(
+				ResourceLoader.active_onLED.getScaledInstance((int) (activePanel.getPreferredSize().getWidth()),
+						(int) activePanel.getPreferredSize().getWidth(), Image.SCALE_SMOOTH));
+		offActiveLED = new ImageIcon(
+				ResourceLoader.active_offLED.getScaledInstance((int) (activePanel.getPreferredSize().getWidth()),
+						(int) (activePanel.getPreferredSize().getWidth()), Image.SCALE_SMOOTH));
+
+		activeOff = new JLabel(offActiveLED);
+
+		activeOn = new JLabel(onActiveLED);
+		activePanel.add(activeOn);
+
 		center.setOpaque(false);
 		top.setOpaque(false);
+
 		SpringLayout sLayout = new SpringLayout();
 		top.setLayout(sLayout);
 
@@ -117,13 +140,18 @@ public class DigitalBoard extends IOBoard {
 				SpringLayout.WEST, top);
 		sLayout.putConstraint(SpringLayout.NORTH, rxtx, (int) (top.getPreferredSize().getHeight() * .05f),
 				SpringLayout.NORTH, top);
+
+		sLayout.putConstraint(SpringLayout.EAST, activePanel, (int) (top.getPreferredSize().getWidth() * .41f),
+				SpringLayout.WEST, top);
+		sLayout.putConstraint(SpringLayout.SOUTH, activePanel, (int) (top.getPreferredSize().getHeight() * .76f),
+				SpringLayout.NORTH, top);
+
 		top.add(rxtx);
-		
-		//System.out.println("SIZE" + bottom.getPreferredSize());
-		
-	
-		
-		
+
+		top.add(activePanel);
+
+		// System.out.println("SIZE" + bottom.getPreferredSize());
+
 		this.setIcon(dbImg);
 		this.add(top, BorderLayout.PAGE_START);
 		this.add(center, BorderLayout.CENTER);
@@ -186,12 +214,29 @@ public class DigitalBoard extends IOBoard {
 	public void startTransmit() {
 
 		transmissionThread = new Thread() {
+			int activeCounter = 1;
+
 			public void run() {
 
 				while (true) {
 
 					try {
+						if (activeCounter > 20) {
+							activeCounter = 1;
+							activePanel.removeAll();
+							activePanel.add(activeOff);
+							activePanel.validate();
+							activePanel.repaint();
+						} else if (activeCounter >= 10 && activeCounter <= 20) {
+							activePanel.removeAll();
+							activePanel.add(activeOn);
+							activePanel.validate();
+							activePanel.repaint();
+						}
+
 						Thread.sleep(100);
+						activeCounter++;
+
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -290,8 +335,6 @@ public class DigitalBoard extends IOBoard {
 		} else if (cmd == 'd' && mType == 'Z') {
 			// REMOVE BOARD
 			System.out.println("Board deleted");
-			ui.removeBoard(this);
-			net.removeBoard(this);
 
 		} else if (cmd == 'd' && mType == 'X') {
 			// ERROR REMOVING BOARD
@@ -314,6 +357,14 @@ public class DigitalBoard extends IOBoard {
 			center.add(channels[i]);
 		}
 
+	}
+
+	@Override
+	public BoardButton getBoardMenuButton(JPanel parent) {
+
+		BoardButton b = new BoardButton(parent, this, ui, menu);
+
+		return b;
 	}
 
 }
